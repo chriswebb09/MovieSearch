@@ -23,7 +23,6 @@ struct Client {
             print(json)
         }
     }
-    
 }
 
 extension Client {
@@ -53,18 +52,15 @@ extension Client {
 
 enum ClientRequest {
     
-    case search(searchTerm: ValidSearch), results(searchTerm: ValidSearch, pageNumber:String), stream
+    case search(searchTerm: ValidSearch), page(searchTerm: ValidSearch, pageNumber:String)
     
     var url: URL {
         switch self {
         case let .search(searchTerm):
             return URL.clientURL(withEndpoint: "/?s=\(searchTerm.string)")
-        case let .results(searchTerm, pageNumber):
+        case let .page(searchTerm, pageNumber):
             return URL.clientURL(withEndpoint:"/?s=\(searchTerm.string)&page=\(pageNumber)")
-        case .stream:
-            return URL.clientURL(withEndpoint: "/stream")
         }
-        
     }
 }
 
@@ -76,7 +72,6 @@ struct ValidSearch {
         guard let escapedString = string.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else { return nil }
         self.string = escapedString
     }
-    
 }
 
 extension URL {
@@ -84,5 +79,4 @@ extension URL {
     static func clientURL(withEndpoint endpoint: String) -> URL {
         return URL(string: Client.baseURL + endpoint)!
     }
-    
 }
