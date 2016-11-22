@@ -60,7 +60,7 @@ enum ClientRequest {
         case let .search(searchTerm):
             return URL.clientURL(withEndpoint: "/?s=\(searchTerm.string)")
         case let .results(searchTerm, pageNumber):
-            return URL.clientURL(withEndpoint:"/?s=\(searchTerm.string)&\(pageNumber)")
+            return URL.clientURL(withEndpoint:"/?s=\(searchTerm.string)&page=\(pageNumber)")
         case .stream:
             return URL.clientURL(withEndpoint: "/stream")
         }
