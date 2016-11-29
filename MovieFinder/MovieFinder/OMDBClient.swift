@@ -6,21 +6,25 @@
 //  Copyright © 2016 Christopher Webb-Orenstein. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 typealias JSONData = [String: Any]
 
+
 struct Client {
+    
+    let session = URLSession(configuration: URLSessionConfiguration.default)
+    var queue = OperationQueue()
+    var returnData: JSONData!
     
     fileprivate static let baseURL: String = Constants.Web.baseURL
     
-    func get(request: ClientRequest, handler: @escaping ([JSONData]?) -> Void) {
+    func get(request: ClientRequest, handler: @escaping (JSONData?) -> Void) {
         let urlRequest = generateURLRequest(with: request.url)
         let urlSession = generateURLSession()
-        
         sendAPICall(withSession: urlSession, request: urlRequest) { json in
             guard let json = json else { handler(nil); return }
-            print(json)
+            handler(json)
         }
     }
 }
@@ -40,13 +44,36 @@ extension Client {
     }
     
     func sendAPICall(withSession session: URLSession, request: URLRequest, handler: @escaping (JSONData?) -> Void) {
-        session.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                guard let data = data else { handler(nil); return }
-                guard let json = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as! JSONData else { handler(nil); return }
-                handler(json)
+        var jsonReturn:JSONData!
+        getDataFromUrl(url: request.url!, completion: { data, response, error in
+            guard let data = data else { handler(nil); return }
+            guard let json = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as! JSONData else { handler(nil); return }
+            jsonReturn = json
+            handler(jsonReturn)
+        })
+    }
+    
+    func getDataFromUrl(url: URL, completion: @escaping (_ data: Data?, _  response: URLResponse?, _ error: Error?) -> Void) {
+        let urlRequest = URLRequest(url:url)
+        session.dataTask(with: urlRequest, completionHandler: { data, response, error in
+            completion(data, response, error)
+        }).resume()
+    }
+    
+    func downloadImage(url: URL, handler: @escaping (UIImage?) -> Void) {
+        print("Download Started")
+        getDataFromUrl(url: url) { (data, response, error)  in
+            let op2 = BlockOperation(block: {
+                guard let data = data, error == nil else { return }
+                OperationQueue.main.addOperation({
+                    handler(UIImage(data: data)!)
+                })
+            })
+            op2.completionBlock = {
+                print("Op2 finished")
             }
-            }.resume()
+            self.queue.addOperation(op2)
+        }
     }
 }
 
@@ -62,6 +89,7 @@ enum ClientRequest {
             return URL.clientURL(withEndpoint:"/?s=\(searchTerm.string)&page=\(pageNumber)")
         }
     }
+    
 }
 
 struct ValidSearch {
