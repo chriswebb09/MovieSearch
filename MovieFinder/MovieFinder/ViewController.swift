@@ -14,12 +14,11 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     var poster = UIImageView()
     var movies = [Movie]()
     var pageNumber = 1
-    var searchTerm = ""
+    var searchTerm = "star+wars"
     var filteredMovies = [Movie]()
+    var titles = [String]()
     fileprivate let itemsPerRow: CGFloat = 3
     fileprivate let sectionInsets = UIEdgeInsets(top: 50.0, left: 20.0, bottom: 50.0, right: 20.0)
-    
-    let lockQueue = DispatchQueue(label: "promise_lock_queue", qos: .userInitiated)
     var client = APIClient()
     
     @IBOutlet weak var searchButton: UIButton! {
@@ -28,6 +27,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
             searchButton.layer.borderWidth = 1
         }
     }
+    
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var collectionViewFlow: UICollectionViewFlowLayout!
     
@@ -38,13 +38,13 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         collectionView.dataSource = self
         collectionView.frame = view.frame
         
-        client.get(request: .search(searchTerm: ValidSearch("star+wars")!), handler: { json in
+        client.get(request: .search(searchTerm: ValidSearch(searchTerm)!), handler: { json in
             var newMovies = [Movie]()
             newMovies = json!
             self.movies = newMovies
             self.collectionView.reloadData()
         })
-        print(self.movies)
+        //print(self.movies)
     }
     
     override func didReceiveMemoryWarning() {
@@ -54,9 +54,10 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         for movie in movies.enumerated() {
-            print(movie.element)
+            //print(movie.element)
         }
-        return movies.count
+        //return 10
+       return movies.count
     }
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -64,7 +65,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     }
     
     @IBAction func searchButtonTapped(_ sender: Any) {
-       self.view.endEditing(true)
+        self.view.endEditing(true)
         client.get(request: .search(searchTerm: ValidSearch("\(self.searchTerm)&page=\(pageNumber)")!), handler: { json in
             var newMovies = [Movie]()
             newMovies = json!
@@ -76,10 +77,27 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "movieCell", for: indexPath as IndexPath) as! MovieCollectionViewCell
-        cell.moviePosterView.image = movies[indexPath.row].posterImage!
-        cell.movieTitleLabel.text = movies[indexPath.row].title
-        cell.layoutSubviews()
-        return cell
+            self.store.titles.append(movies[indexPath.row].title)
+            cell.moviePosterView.image = movies[indexPath.row].posterImage!
+            cell.movieTitleLabel.text = movies[indexPath.row].title
+            cell.layoutSubviews()
+            return cell
+//        var containsTitle = titles.contains(movies[indexPath.row].title)
+//        
+//        if !containsTitle {
+//            titles.append(movies[indexPath.row].title)
+//            cell.moviePosterView.image = movies[indexPath.row].posterImage!
+//            cell.movieTitleLabel.text = movies[indexPath.row].title
+//            cell.layoutSubviews()
+//            return cell
+//        }
+//        
+//        movies.remove(at: indexPath.row)
+//        collectionView.reloadData()
+//        cell.moviePosterView.image = movies[indexPath.row].posterImage!
+//        cell.movieTitleLabel.text = movies[indexPath.row].title
+//        cell.layoutSubviews()
+//        return cell
         
     }
     
@@ -88,7 +106,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         if indexPath.item == self.movies.count - 1 {
             pageNumber += 1
-            client.get(request: .search(searchTerm: ValidSearch("me&page=\(pageNumber)")!), handler: { json in
+            client.get(request: .search(searchTerm: ValidSearch("\(searchTerm)&page=\(pageNumber)")!), handler: { json in
                 
                 var newMovies = [Movie]()
                 newMovies = json!
@@ -130,6 +148,7 @@ extension ViewController: UITextFieldDelegate {
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
+        print(self.store.searchResults)
         searchTerm = textField.text!
         print(searchTerm)
     }

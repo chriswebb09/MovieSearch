@@ -16,6 +16,20 @@ class DataStore {
     var searchResult: JSONData?
     var searchResults: [Movie] = [Movie]()
     var returndData: JSONData!
+    var titles = [String]()
+    var uids = [Int]()
+    
+    
+    func checkForDuplicates(title:String, uid: Int) -> Bool {
+        self.titles.append(title)
+        self.uids.append(uid)
+        if titles.contains(title) {
+            return true
+        } else if uids.contains(uid) {
+            return true
+        }
+        return false
+    }
     
     func returnWebData(from searchTerm: String, completion: @escaping (JSONData?) -> Void) {
         var returnedJSON: JSONData?
@@ -42,7 +56,7 @@ class DataStore {
         
         if let data = searchResult?["Search"] as! Array<AnyObject>? {
             var newMovie = Movie()
-            print(self.searchResults)
+           // print(self.searchResults)
             self.searchResults.removeAll()
             data.forEach { bit in
                 

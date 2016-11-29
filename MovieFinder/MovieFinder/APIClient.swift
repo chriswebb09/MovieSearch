@@ -9,6 +9,10 @@
 import Foundation
 import UIKit
 
+protocol DataOp {
+    
+}
+
 class APIClient {
     
     let store = DataStore.sharedInstance
@@ -16,6 +20,7 @@ class APIClient {
     var queue = OperationQueue()
     let session = URLSession(configuration: URLSessionConfiguration.default)
     var returnData: JSONData!
+    var urls = [String]()
     var movieDataArray: [Movie]!
     
     
@@ -30,44 +35,120 @@ class APIClient {
         
         sendNewAPICall(withSession: urlSession, request: urlRequest) { json in
             self.movieDataArray = [Movie]()
-            
             guard let json = json else { handler(nil); return }
             guard let data = json as? AnyObject else { return }
             guard let movieSearch = data["Search"] as? [AnyObject] else { return }
-            
             self.movieDataFunc(passedData: movieSearch, handler: { movie in
+//                if self.urls.contains(movie.posterURL) == false {
+//                    self.urls.append(movie.posterURL)
+//                }
                 
                 let url = URL(string: movie.posterURL)
+                //print(self.store.uids)
+                //print(self.urls)
+                
+                
+                print(!self.urls.contains(movie.posterURL))
+                
+                if !self.urls.contains(movie.posterURL) {
+                    self.urls.append(movie.posterURL)
+                    print("****************")
+                    print(self.urls)
+                    print("---------------------")
+                    print(movie.posterURL)
+                    // print (url?.absoluteString)
+                    //self.movieDataArray.remove(at: self.movieDataArray.count - 1)
+                    //print(self.store.uids)
+                    //print(self.movieDataArray)
+                    //self.store.uids.append()
+                    
+                } else if self.urls.contains(movie.posterURL) {
+                    //self.urls.append(movie.posterURL)
+                    print("@@@@@@@@@@@@@@@@@")
+                    print(self.movieDataArray)
+                    return 
+                }
+                
+                //print(self.movieDataArray)
+                //print("@@@@@@@@@@@@@@@@@@@@@@")
+                
+               // print(self.urls)
+                self.store.uids.append(movie.uid)
+                self.urls.append(movie.posterURL)
+                //print(self.movieDataArray)
+                
+                // print(self.urls)
+                //print(self.store.uids)
                 self.downloadNewImage(url: url!, handler: { image in
+                    
                     var returnMovie = movie
                     returnMovie.posterImage = image
                     self.myMovies(passedData: returnMovie, handler: { movie in
                         var test = movie
-                        
                         self.movieDataArray.append(test)
                     })
                     var setMovies = self.movieDataArray as? [Movie]
-                    //var change = Set<Movie>(setMovies!)
                     self.store.searchResults.append(contentsOf: setMovies!)
-                    //self.movieDataArray = Array(change)
                     handler(self.store.searchResults)
                 })
+                
+                
+                //                self.downloadNewImage(url: url!, handler: { image in
+                //                    var returnMovie = movie
+                //                    returnMovie.posterImage = image
+                //                    self.myMovies(passedData: returnMovie, handler: { movie in
+                //                        var test = movie
+                //                        self.movieDataArray.append(test)
+                //                    })
+                //                    var setMovies = self.movieDataArray as? [Movie]
+                //                    self.store.searchResults.append(contentsOf: setMovies!)
+                //                    handler(self.store.searchResults)
+                //                })
             })
         }
     }
     
     func movieDataFunc(passedData: [AnyObject], handler: @escaping (Movie) -> Void) {
-        passedData.forEach { bit in
-            
+        for databit in passedData {
             var newMovie = Movie()
             
-            newMovie.title = (bit["Title"] as? String)!
-            newMovie.posterURL = (bit["Poster"] as? String)!
-            newMovie.imdbID = (bit["imdbID"] as? String)!
-            newMovie.year = (bit["Year"] as? String)!
-            
+            newMovie.title = (databit["Title"] as? String)!
+            newMovie.posterURL = (databit["Poster"] as? String)!
+            newMovie.imdbID = (databit["imdbID"] as? String)!
+            newMovie.year = (databit["Year"] as? String)!
             handler(newMovie)
+            
+            //            if urls.contains(newMovie.posterURL) {
+            //                print("here")
+            //                continue
+            //            } else {
+            //                handler(newMovie)
+            //            }
         }
+        
+        //        passedData.forEach { bit in
+        //
+        //            var newMovie = Movie()
+        //
+        //            newMovie.title = (bit["Title"] as? String)!
+        //            newMovie.posterURL = (bit["Poster"] as? String)!
+        //            newMovie.imdbID = (bit["imdbID"] as? String)!
+        //            newMovie.year = (bit["Year"] as? String)!
+        //
+        //            if urls.contains(newMovie.posterURL) {
+        //                break
+        //            }
+        //
+        ////            if self.urls.contains(newMovie.posterURL) {
+        ////                print("yes")
+        ////                print(self.urls)
+        ////                return
+        ////            }
+        ////            self.urls.append(newMovie.posterURL)
+        //
+        //
+        //            handler(newMovie)
+        //        }
     }
     
     func myMovies(passedData: Movie, handler: @escaping (Movie) -> Void) {
@@ -98,6 +179,14 @@ class APIClient {
     
     func downloadNewImage(url: URL, handler: @escaping (UIImage?) -> Void) {
         queue.maxConcurrentOperationCount = 5
+        //
+        //        if self.urls.contains(url.absoluteString) {
+        //            print("yes")
+        //            print(self.urls)
+        //            return
+        //        }
+        //        self.urls.append(url.absoluteString)
+        
         print("Download Started")
         
         getNewDataFromUrl(url: url) { (data, response, error)  in
@@ -137,7 +226,7 @@ class APIClient {
 //class AsyncOperations: Operation {
 //    let dataOperation: APIClient
 //    var request: URLRequest
-//    
+//
 //    var isExecuting: Bool {
 //        get { return super.isExecuting }
 //        set { super.isExecuting }
