@@ -108,5 +108,4 @@ class APClient {
             handler(json)
         }
     }
-    
 }

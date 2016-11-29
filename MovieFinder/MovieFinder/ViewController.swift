@@ -13,21 +13,30 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     let store = DataStore.sharedInstance
     var poster = UIImageView()
     var movies = [Movie]()
+    
     fileprivate let itemsPerRow: CGFloat = 3
     fileprivate let sectionInsets = UIEdgeInsets(top: 50.0, left: 20.0, bottom: 50.0, right: 20.0)
+    
     let searchController = UISearchController(searchResultsController: nil)
     let lockQueue = DispatchQueue(label: "promise_lock_queue", qos: .userInitiated)
     var client = APClient()
     
-    @IBOutlet weak var searchButton: UIButton!
+    @IBOutlet weak var searchButton: UIButton! {
+        didSet {
+            searchButton.layer.borderColor = UIColor.white.cgColor
+            searchButton.layer.borderWidth = 1
+        }
+    }
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var collectionViewFlow: UICollectionViewFlowLayout!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.frame = view.frame
+        
         client.get(request: .search(searchTerm: ValidSearch("star+wars")!), handler: { json in
             var newMovies = [Movie]()
             newMovies = json!
@@ -63,9 +72,10 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "movieCell", for: indexPath as IndexPath) as! MovieCollectionViewCell
         cell.moviePosterView.image = movies[indexPath.row].posterImage!
+        cell.movieTitleLabel.text = movies[indexPath.row].title
+        cell.layoutSubviews()
         return cell
         
     }

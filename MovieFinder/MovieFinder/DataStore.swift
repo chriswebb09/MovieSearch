@@ -11,8 +11,8 @@ import UIKit
 
 class DataStore {
     
-    static let sharedInstance = DataStore()
     let api = Client()
+    static let sharedInstance = DataStore()
     var searchResult: JSONData?
     var searchResults: [Movie] = [Movie]()
     var returndData: JSONData!
@@ -33,20 +33,24 @@ class DataStore {
     
     func addMoviesToResults() {
         var movieData: JSONData!
+        
         returnWebData(from: "star+wars", completion: { json in
             let data = self.returnJSON(data: json!)
             movieData = data
             self.searchResult = movieData
         })
+        
         if let data = searchResult?["Search"] as! Array<AnyObject>? {
             var newMovie = Movie()
             print(self.searchResults)
             self.searchResults.removeAll()
             data.forEach { bit in
+                
                 newMovie.title = (bit["Title"] as? String)!
                 newMovie.posterURL = (bit["Poster"] as? String)!
                 newMovie.imdbID = (bit["imdbID"] as? String)!
                 newMovie.year = (bit["Year"] as? String)!
+                
                 self.api.downloadImage(url: URL(string:String(describing: newMovie.posterURL))!, handler: { image in
                     newMovie.posterImage = image
                     DispatchQueue.main.async {
@@ -60,11 +64,13 @@ class DataStore {
 }
 
 struct Movie {
+    
     var title: String
     var imdbID: String
     var posterURL: String
     var year: String
     var posterImage: UIImage?
+    
     init() {
         self.title = "None"
         self.imdbID = "N/A"

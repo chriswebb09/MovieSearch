@@ -20,8 +20,10 @@ struct Client {
     fileprivate static let baseURL: String = Constants.Web.baseURL
     
     func get(request: ClientRequest, handler: @escaping (JSONData?) -> Void) {
+        
         let urlRequest = generateURLRequest(with: request.url)
         let urlSession = generateURLSession()
+        
         sendAPICall(withSession: urlSession, request: urlRequest) { json in
             guard let json = json else { handler(nil); return }
             handler(json)
@@ -32,18 +34,21 @@ struct Client {
 extension Client {
     
     func generateURLRequest(with url: URL) -> URLRequest {
+        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         return request
     }
     
     func generateURLSession() -> URLSession {
+        
         let sessionConfig = URLSessionConfiguration.default
         let session = URLSession(configuration: sessionConfig)
         return session
     }
     
     func sendAPICall(withSession session: URLSession, request: URLRequest, handler: @escaping (JSONData?) -> Void) {
+        
         var jsonReturn:JSONData!
         getDataFromUrl(url: request.url!, completion: { data, response, error in
             guard let data = data else { handler(nil); return }
@@ -54,6 +59,7 @@ extension Client {
     }
     
     func getDataFromUrl(url: URL, completion: @escaping (_ data: Data?, _  response: URLResponse?, _ error: Error?) -> Void) {
+        
         let urlRequest = URLRequest(url:url)
         session.dataTask(with: urlRequest, completionHandler: { data, response, error in
             completion(data, response, error)
@@ -61,6 +67,7 @@ extension Client {
     }
     
     func downloadImage(url: URL, handler: @escaping (UIImage?) -> Void) {
+        
         print("Download Started")
         getDataFromUrl(url: url) { (data, response, error)  in
             let op2 = BlockOperation(block: {
@@ -82,6 +89,7 @@ enum ClientRequest {
     case search(searchTerm: ValidSearch), page(searchTerm: ValidSearch, pageNumber:String)
     
     var url: URL {
+        
         switch self {
         case let .search(searchTerm):
             return URL.clientURL(withEndpoint: "/?s=\(searchTerm.string)")
