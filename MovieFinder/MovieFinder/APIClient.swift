@@ -10,8 +10,6 @@ import Foundation
 import UIKit
 
 class APClient {
-    
-    private let apiQueue = DispatchQueue(label: "api_request_queue", qos: .userInitiated)
     var queue = OperationQueue()
     let session = URLSession(configuration: URLSessionConfiguration.default)
     var returnData: JSONData!
@@ -26,11 +24,8 @@ class APClient {
         sendNewAPICall(withSession: urlSession, request: urlRequest) { json in
             self.movieDataArray = [Movie]()
             guard let json = json else { handler(nil); return }
-            
             guard let data = json as? AnyObject else { return }
-            
             guard let movieSearch = data["Search"] as? [AnyObject] else { return }
-            
             self.movieDataFunc(passedData: movieSearch, handler: { movie in
                 let url = URL(string: movie.posterURL)
                 self.downloadNewImage(url: url!, handler: { image in
@@ -41,12 +36,9 @@ class APClient {
                         self.movieDataArray.append(test)
                     })
                     handler(self.movieDataArray)
-                    
                 })
             })
-            
         }
-        
     }
     
     func movieDataFunc(passedData: [AnyObject], handler: @escaping (Movie) -> Void) {
@@ -56,16 +48,13 @@ class APClient {
             newMovie.posterURL = (bit["Poster"] as? String)!
             newMovie.imdbID = (bit["imdbID"] as? String)!
             newMovie.year = (bit["Year"] as? String)!
-            //print(bit)
             handler(newMovie)
         }
     }
     
-    
     func myMovies(passedData: Movie, handler: @escaping (Movie) -> Void) {
         self.movieDataArray.append(passedData)
     }
-    
     
     func generateURLRequest(with url: URL) -> URLRequest {
         var request = URLRequest(url: url)
@@ -80,19 +69,15 @@ class APClient {
     }
     
     func sendNewAPICall(withSession session: URLSession, request: URLRequest, handler: @escaping (JSONData?) -> Void) {
-        
         getNewDataFromUrl(url: request.url!, completion: { data, response, error in
             guard let data = data else { handler(nil); return }
             guard let json = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as! JSONData else { handler(nil); return }
-            
             handler(json)
         })
     }
     
     func downloadNewImage(url: URL, handler: @escaping (UIImage?) -> Void) {
         queue.maxConcurrentOperationCount = 5
-        
-        
         print("Download Started")
         getNewDataFromUrl(url: url) { (data, response, error)  in
             let op2 = BlockOperation(block: {

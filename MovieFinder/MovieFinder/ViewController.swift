@@ -9,19 +9,20 @@
 import UIKit
 
 class ViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource {
+    
     let store = DataStore.sharedInstance
-    fileprivate let itemsPerRow: CGFloat = 3
-    fileprivate let sectionInsets = UIEdgeInsets(top: 50.0, left: 20.0, bottom: 50.0, right: 20.0)
     var poster = UIImageView()
     var movies = [Movie]()
+    fileprivate let itemsPerRow: CGFloat = 3
+    fileprivate let sectionInsets = UIEdgeInsets(top: 50.0, left: 20.0, bottom: 50.0, right: 20.0)
     let searchController = UISearchController(searchResultsController: nil)
     let lockQueue = DispatchQueue(label: "promise_lock_queue", qos: .userInitiated)
+    var client = APClient()
     
     @IBOutlet weak var searchButton: UIButton!
-    
     @IBOutlet weak var collectionView: UICollectionView!
-    var client = APClient()
     @IBOutlet weak var collectionViewFlow: UICollectionViewFlowLayout!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.delegate = self
@@ -60,10 +61,9 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
             self.collectionView.reloadData()
         })
     }
-
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-
+        
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "movieCell", for: indexPath as IndexPath) as! MovieCollectionViewCell
         cell.moviePosterView.image = movies[indexPath.row].posterImage!
         return cell
@@ -74,7 +74,6 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath as IndexPath)
         return headerView
     }
-
     
     /*
      // MARK: - Navigation
@@ -85,6 +84,5 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
      // Pass the selected object to the new view controller.
      }
      */
-    
 }
 

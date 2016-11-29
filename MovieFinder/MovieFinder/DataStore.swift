@@ -31,8 +31,6 @@ class DataStore {
         return self.searchResult!
     }
     
-    
-    
     func addMoviesToResults() {
         var movieData: JSONData!
         returnWebData(from: "star+wars", completion: { json in
@@ -49,12 +47,11 @@ class DataStore {
                 newMovie.posterURL = (bit["Poster"] as? String)!
                 newMovie.imdbID = (bit["imdbID"] as? String)!
                 newMovie.year = (bit["Year"] as? String)!
-                
                 self.api.downloadImage(url: URL(string:String(describing: newMovie.posterURL))!, handler: { image in
                     newMovie.posterImage = image
                     DispatchQueue.main.async {
-                       // completion(image)
-                                            }
+                        // implement
+                    }
                 })
                 self.searchResults.append(newMovie)
             }
@@ -68,7 +65,6 @@ struct Movie {
     var posterURL: String
     var year: String
     var posterImage: UIImage?
-    
     init() {
         self.title = "None"
         self.imdbID = "N/A"
