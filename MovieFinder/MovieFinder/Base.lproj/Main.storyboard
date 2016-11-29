@@ -60,17 +60,22 @@
                                         </connections>
                                     </collectionViewCell>
                                 </cells>
-                                <collectionReusableView key="sectionHeaderView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="header" id="pou-MR-3Lo">
+                                <collectionReusableView key="sectionHeaderView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="header" id="pou-MR-3Lo" customClass="MovieCollectionReusableView" customModule="MovieFinder" customModuleProvider="target">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="50"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
-                                        <searchBar contentMode="redraw" fixedFrame="YES" placeholder="Search for Movies" translatesAutoresizingMaskIntoConstraints="NO" id="d5O-QX-HeD">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                            <color key="barTintColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="AXk-8K-IzC">
+                                            <rect key="frame" x="42" y="10" width="290" height="30"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <nil key="textColor"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits"/>
-                                        </searchBar>
+                                        </textField>
                                     </subviews>
+                                    <color key="backgroundColor" red="1" green="0.32109273269999999" blue="0.28673844120000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <connections>
+                                        <outlet property="searchField" destination="AXk-8K-IzC" id="hjR-Pi-0P5"/>
+                                    </connections>
                                 </collectionReusableView>
                             </collectionView>
                         </subviews>
@@ -106,7 +111,7 @@
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="2a8-HL-WLF" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" barStyle="black" id="Br4-Np-3lF">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" id="Br4-Np-3lF">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="barTintColor" red="1" green="0.32109273265928606" blue="0.28673844122037773" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

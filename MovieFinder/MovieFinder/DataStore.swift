@@ -62,23 +62,3 @@ class DataStore {
         }
     }
 }
-
-struct Movie {
-    
-    var title: String
-    var imdbID: String
-    var posterURL: String
-    var year: String
-    var posterImage: UIImage?
-    
-    init() {
-        self.title = "None"
-        self.imdbID = "N/A"
-        self.posterURL = "Uknown"
-        self.year = "None"
-        self.posterImage = nil
-    }
-}
-
-
-

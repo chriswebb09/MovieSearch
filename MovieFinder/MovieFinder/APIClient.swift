@@ -9,33 +9,48 @@
 import Foundation
 import UIKit
 
-class APClient {
+class APIClient {
+    
+    let store = DataStore.sharedInstance
+    
     var queue = OperationQueue()
     let session = URLSession(configuration: URLSessionConfiguration.default)
     var returnData: JSONData!
     var movieDataArray: [Movie]!
     
+    
     func get(request: ClientRequest, handler: @escaping ([Movie]?) -> Void) {
+        
         var returnMovieData = [Movie]()
         let urlRequest = generateURLRequest(with: request.url)
         let urlSession = generateNewURLSession()
+        
         self.queue.maxConcurrentOperationCount = 10
         self.queue.qualityOfService = .userInitiated
+        
         sendNewAPICall(withSession: urlSession, request: urlRequest) { json in
             self.movieDataArray = [Movie]()
+            
             guard let json = json else { handler(nil); return }
             guard let data = json as? AnyObject else { return }
             guard let movieSearch = data["Search"] as? [AnyObject] else { return }
+            
             self.movieDataFunc(passedData: movieSearch, handler: { movie in
+                
                 let url = URL(string: movie.posterURL)
                 self.downloadNewImage(url: url!, handler: { image in
                     var returnMovie = movie
                     returnMovie.posterImage = image
                     self.myMovies(passedData: returnMovie, handler: { movie in
                         var test = movie
+                        
                         self.movieDataArray.append(test)
                     })
-                    handler(self.movieDataArray)
+                    var setMovies = self.movieDataArray as? [Movie]
+                    //var change = Set<Movie>(setMovies!)
+                    self.store.searchResults.append(contentsOf: setMovies!)
+                    //self.movieDataArray = Array(change)
+                    handler(self.store.searchResults)
                 })
             })
         }
@@ -43,11 +58,14 @@ class APClient {
     
     func movieDataFunc(passedData: [AnyObject], handler: @escaping (Movie) -> Void) {
         passedData.forEach { bit in
+            
             var newMovie = Movie()
+            
             newMovie.title = (bit["Title"] as? String)!
             newMovie.posterURL = (bit["Poster"] as? String)!
             newMovie.imdbID = (bit["imdbID"] as? String)!
             newMovie.year = (bit["Year"] as? String)!
+            
             handler(newMovie)
         }
     }
@@ -70,8 +88,10 @@ class APClient {
     
     func sendNewAPICall(withSession session: URLSession, request: URLRequest, handler: @escaping (JSONData?) -> Void) {
         getNewDataFromUrl(url: request.url!, completion: { data, response, error in
+            
             guard let data = data else { handler(nil); return }
             guard let json = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as! JSONData else { handler(nil); return }
+            
             handler(json)
         })
     }
@@ -79,6 +99,7 @@ class APClient {
     func downloadNewImage(url: URL, handler: @escaping (UIImage?) -> Void) {
         queue.maxConcurrentOperationCount = 5
         print("Download Started")
+        
         getNewDataFromUrl(url: url) { (data, response, error)  in
             let op2 = BlockOperation(block: {
                 guard let data = data, error == nil else { return }
@@ -101,11 +122,55 @@ class APClient {
     }
     
     func getNew(request: ClientRequest, handler: @escaping (JSONData?) -> Void) {
+        
         let urlRequest = generateURLRequest(with: request.url)
         let urlSession = generateNewURLSession()
+        
         sendNewAPICall(withSession: urlSession, request: urlRequest) { json in
             guard let json = json else { handler(nil); return }
             handler(json)
         }
     }
 }
+
+
+//class AsyncOperations: Operation {
+//    let dataOperation: APIClient
+//    var request: URLRequest
+//    
+//    var isExecuting: Bool {
+//        get { return super.isExecuting }
+//        set { super.isExecuting }
+//    }
+//    
+//    func start() {
+//        self.willChangeValue(forKey: "isExecuting")
+//        self.isExecuting = true
+//        self.didChangeValue(forKey: "isExecuting")
+//        
+//        OperationQueue.main.addOperation({
+//            dataOperation.downloadNewImage(url: self.request.url!, handler: {
+//                
+//            })
+//        })
+//        
+//    }
+//
+//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

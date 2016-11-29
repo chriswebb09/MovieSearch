@@ -13,13 +13,14 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     let store = DataStore.sharedInstance
     var poster = UIImageView()
     var movies = [Movie]()
-    
+    var pageNumber = 1
+    var searchTerm = ""
+    var filteredMovies = [Movie]()
     fileprivate let itemsPerRow: CGFloat = 3
     fileprivate let sectionInsets = UIEdgeInsets(top: 50.0, left: 20.0, bottom: 50.0, right: 20.0)
     
-    let searchController = UISearchController(searchResultsController: nil)
     let lockQueue = DispatchQueue(label: "promise_lock_queue", qos: .userInitiated)
-    var client = APClient()
+    var client = APIClient()
     
     @IBOutlet weak var searchButton: UIButton! {
         didSet {
@@ -63,7 +64,8 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     }
     
     @IBAction func searchButtonTapped(_ sender: Any) {
-        client.get(request: .search(searchTerm: ValidSearch("star+wars&page=2")!), handler: { json in
+       self.view.endEditing(true)
+        client.get(request: .search(searchTerm: ValidSearch("\(self.searchTerm)&page=\(pageNumber)")!), handler: { json in
             var newMovies = [Movie]()
             newMovies = json!
             self.movies = newMovies
@@ -72,6 +74,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "movieCell", for: indexPath as IndexPath) as! MovieCollectionViewCell
         cell.moviePosterView.image = movies[indexPath.row].posterImage!
         cell.movieTitleLabel.text = movies[indexPath.row].title
@@ -80,9 +83,19 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         
     }
     
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath as IndexPath)
-        return headerView
+    
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        if indexPath.item == self.movies.count - 1 {
+            pageNumber += 1
+            client.get(request: .search(searchTerm: ValidSearch("me&page=\(pageNumber)")!), handler: { json in
+                
+                var newMovies = [Movie]()
+                newMovies = json!
+                self.movies.append(contentsOf: newMovies)
+                self.collectionView.reloadData()
+            })
+        }
     }
     
     /*
@@ -96,3 +109,28 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
      */
 }
 
+
+func filterContentForSearchText(searchText: String, scope: String = "All") {
+}
+
+extension ViewController: UITextFieldDelegate {
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath as IndexPath) as! MovieCollectionReusableView
+        headerView.searchField.delegate = self
+        return headerView
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        print("Did begin editing: \(textField.text)")
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        return textField.resignFirstResponder()
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        searchTerm = textField.text!
+        print(searchTerm)
+    }
+}
